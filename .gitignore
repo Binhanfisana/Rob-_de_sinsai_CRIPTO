@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 grafico_arbitragem.png
 grafico_teste.png
+*.sqlite3
+*.sqlite3-journal
