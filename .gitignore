@@ -3,3 +3,5 @@ estado.tmp
 .env
 __pycache__/
 *.pyc
+grafico_arbitragem.png
+grafico_teste.png
