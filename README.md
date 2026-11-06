@@ -26,3 +26,7 @@ Execute `python backtest.py --dias 90` para baixar candles públicos e calcular 
 2. No PowerShell, defina `$env:TELEGRAM_TOKEN = 'TOKEN_DO_BOT'` e execute `python telegram_config.py` para listar os IDs das conversas recentes. Não envie seu token a outras pessoas nem o inclua no repositório. O comando depende de getUpdates e não funciona se um webhook estiver ativo.
 3. Defina `$env:TELEGRAM_CHAT_ID = 'ID_DA_CONVERSA'` e execute novamente `python telegram_config.py`. O bot enviará uma mensagem de teste.
 4. Na mesma janela, execute `python robo_sol.py`. As variáveis de ambiente duram apenas enquanto a janela estiver aberta.
+
+## Relatório Spot → P2P
+
+Com o Telegram configurado, rode `python arbitragem.py --valor 500 --telegram`. O comando envia uma única mensagem com preços e um gráfico de barras em texto; sem `--telegram`, mostra apenas no terminal. O valor é aplicado separadamente em cada moeda fiduciária. O relatório compara o melhor preço Spot para adquirir USDT e anúncios P2P de compra de USDT que aceitam o valor informado; consulta até 20 anúncios. A resposta P2P usa um endpoint público não documentado oficialmente, sujeito a mudanças, bloqueios e ofertas diferentes conforme região. USD é indicado como indisponível até haver um par Spot adequado. A diferença é bruta, não garante operação nem considera taxas, pagamento, slippage, volume completo, risco da contraparte ou impostos. Confira os detalhes na Binance. Não envia ordens. O programa não agenda relatórios automaticamente.
