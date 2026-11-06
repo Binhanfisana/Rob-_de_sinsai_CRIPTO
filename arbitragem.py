@@ -1,5 +1,5 @@
 """Comparação informativa Spot/P2P; não executa ordens."""
-import argparse, html, io, json, os, sys, urllib.request, urllib.parse, uuid
+import argparse, html, io, json, os, sys, time, urllib.request, urllib.parse, uuid
 from datetime import datetime, timezone
 from robo_sol import request
 
@@ -97,27 +97,36 @@ def main():
     parser=argparse.ArgumentParser(description='Compara preços públicos Spot e P2P; não opera.')
     parser.add_argument('--valor',type=float,default=500,help='valor em cada moeda fiduciária (padrão: 500)')
     parser.add_argument('--telegram',action='store_true',help='enviar relatório ao Telegram')
+    parser.add_argument('--intervalo', type=int, default=180, help='segundos entre relatórios; 0 envia uma vez (padrão: 180)')
     args=parser.parse_args()
+    if args.intervalo != 0 and args.intervalo < 60: parser.error('Intervalo mínimo: 60 segundos; use 0 para uma única execução')
     if not 0 < args.valor < 10000000: parser.error('Valor inválido')
-    results=[]; errors=[]
-    for fiat in ['BRL','EUR','USD']:
-        try: results.append(quote(fiat,args.valor))
-        except Exception as exc: errors.append((fiat, str(exc) if isinstance(exc,ValueError) else 'cotação indisponível'))
-    msg=report(results,errors,args.valor)
-    print(html.unescape(__import__('re').sub(r'<[^>]+>', '', msg)),flush=True)
-    try:
-        image = chart(results, errors)
-    except RuntimeError as exc:
-        raise SystemExit(str(exc))
-    with open('grafico_arbitragem.png', 'wb') as output: output.write(image)
-    print('Gráfico salvo em grafico_arbitragem.png.')
-    if args.telegram:
-        token=os.getenv('TELEGRAM_TOKEN'); chat=os.getenv('TELEGRAM_CHAT_ID')
-        if not token or not chat: raise SystemExit('Configure TELEGRAM_TOKEN e TELEGRAM_CHAT_ID.')
+    while True:
+        results=[]; errors=[]
+        for fiat in ['BRL','EUR','USD']:
+            try: results.append(quote(fiat,args.valor))
+            except Exception as exc: errors.append((fiat, str(exc) if isinstance(exc,ValueError) else 'cotação indisponível'))
+        msg=report(results,errors,args.valor)
+        print(html.unescape(__import__('re').sub(r'<[^>]+>', '', msg)),flush=True)
         try:
-            send_photo(token, chat, image, msg)
-            print('Relatório enviado.')
-        except Exception: raise SystemExit('Falha no envio ao Telegram; confira as credenciais e a conexão.')
+            image = chart(results, errors)
+        except RuntimeError as exc:
+            raise SystemExit(str(exc))
+        with open('grafico_arbitragem.png', 'wb') as output: output.write(image)
+        print('Gráfico salvo em grafico_arbitragem.png.')
+        if args.telegram:
+            token=os.getenv('TELEGRAM_TOKEN'); chat=os.getenv('TELEGRAM_CHAT_ID')
+            if not token or not chat: raise SystemExit('Configure TELEGRAM_TOKEN e TELEGRAM_CHAT_ID.')
+            try:
+                send_photo(token, chat, image, msg)
+                print('Relatório enviado.')
+            except Exception: raise SystemExit('Falha no envio ao Telegram; confira as credenciais e a conexão.')
+        if args.intervalo == 0: break
+        print(f'Próximo relatório em {args.intervalo} segundos. Pare com Ctrl+C.', flush=True)
+        try: time.sleep(args.intervalo)
+        except KeyboardInterrupt:
+            print('\nMonitoramento encerrado.')
+            break
 
 if __name__=='__main__': main()
 
