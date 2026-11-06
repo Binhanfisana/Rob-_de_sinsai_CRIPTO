@@ -15,3 +15,14 @@ python .\robo_sol.py
 ```
 
 Sem credenciais do Telegram, as mensagens aparecem no terminal. Mantenha o programa aberto. Os valores de saldo inicial só se aplicam quando não existe estado.json. Para reiniciar a simulação, pare o programa e renomeie ou remova esse arquivo. Uma falha do Telegram é mostrada no terminal e não é reenviada automaticamente. Antes de operar com dinheiro real, serão necessários testes, limites de risco, tratamento de ordens e conferência da conta.
+
+## Teste histórico
+
+Execute `python backtest.py --dias 90` para baixar candles públicos e calcular o resultado. O período inclui 150 candles de aquecimento; o capital inicial é 1.000 USDT e cada compra usa até 100 USDT. A simulação executa na abertura do candle seguinte ao sinal, cobra 0,1% por ordem e estima o valor da posição aberta incluindo taxa de venda. Não considera slippage, latência, falhas, impostos ou alterações de taxa. Resultados passados não garantem resultados futuros. O simulador ao vivo usa o fechamento como referência, portanto os resultados não são idênticos.
+
+## Configurar e testar o Telegram
+
+1. Crie um bot usando @BotFather e envie /start ao bot criado.
+2. No PowerShell, defina `$env:TELEGRAM_TOKEN = 'TOKEN_DO_BOT'` e execute `python telegram_config.py` para listar os IDs das conversas recentes. Não envie seu token a outras pessoas nem o inclua no repositório. O comando depende de getUpdates e não funciona se um webhook estiver ativo.
+3. Defina `$env:TELEGRAM_CHAT_ID = 'ID_DA_CONVERSA'` e execute novamente `python telegram_config.py`. O bot enviará uma mensagem de teste.
+4. Na mesma janela, execute `python robo_sol.py`. As variáveis de ambiente duram apenas enquanto a janela estiver aberta.
